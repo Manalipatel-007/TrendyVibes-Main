@@ -87,8 +87,8 @@ export default function ProductDetails() {
     const [selectedSize, setSelectedSize] = useState(product.sizes[2])
     const navigate = useNavigate();
 
-    const handleAddToCart=()=>{
-       navigate("/cart");
+    const handleAddToCart = () => {
+        navigate("/cart");
     }
 
     return (
@@ -182,7 +182,7 @@ export default function ProductDetails() {
                                 <div className="mt-10">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-sm font-medium text-gray-900">Size</h3>
-                                
+
                                     </div>
 
                                     <fieldset aria-label="Choose a size" className="mt-4">
@@ -230,7 +230,7 @@ export default function ProductDetails() {
                                     </fieldset>
                                 </div>
 
-                                <Button onClick={handleAddToCart} color="secondary" variant="contained" sx={{px:"2rem", py:"1rem", bgcolor:"#9155fd"}}>
+                                <Button onClick={handleAddToCart} color="secondary" variant="contained" sx={{ px: "2rem", py: "1rem", bgcolor: "#9155fd" }}>
                                     Add To Cart
                                 </Button>
                             </form>
@@ -271,88 +271,88 @@ export default function ProductDetails() {
                     </div>
                 </section>
 
-            {/* rating and reviews */}
-            <section>
-                <h1 className='font-semibold text-lg pb-4'>Recent Review & Rating</h1>
+                {/* rating and reviews */}
+                <section>
+                    <h1 className='font-semibold text-lg pb-4'>Recent Review & Rating</h1>
 
-                <div className='border p-5'>
-                   <Grid container spacing={7}>
-                     <Grid item xs={7}>
-                         <div className='space-y-5'>
-                            {[1,1,1].map((item) => <ProductReviewCart/> )}
-                         </div>
-                     </Grid>
-
-                     <Grid item xs={5}>
-                        <h1 className='text-xl font-semibold pb-2'>Product Ratings</h1>
-
-                        <div className='flex items-center space-x-3'>
-                            <Rating value={4.6} precision={.5} readOnly/>
-                            <p className='opacity-60'>54890 Ratings</p>
-                        </div>
-
-                        <Box className="mt-5 space-y-3">
-                            <Grid container alignItems="center" gap={2}>
-                                <Grid item xs={2}>
-                                    <p>Excellent</p>
-                                </Grid>
-                                <Grid item xs={7}>
-                                    <LinearProgress sx={{bgcolor:"#d0d0d0", borderRadius:4, height:7}} variant='determinate' value={40} color="success"></LinearProgress>
-                                </Grid>
+                    <div className='border p-5'>
+                        <Grid container spacing={7}>
+                            <Grid item xs={7}>
+                                <div className='space-y-5'>
+                                    {[1, 1, 1].map((item) => <ProductReviewCart />)}
+                                </div>
                             </Grid>
 
-                            <Grid container alignItems="center" gap={2}>
-                                <Grid item xs={2}>
-                                    <p>Very Good</p>
-                                </Grid>
-                                <Grid item xs={7}>
-                                    <LinearProgress sx={{bgcolor:"#d0d0d0", borderRadius:4, height:7}} variant='determinate' value={30} color="success"></LinearProgress>
-                                </Grid>
+                            <Grid item xs={5}>
+                                <h1 className='text-xl font-semibold pb-2'>Product Ratings</h1>
+
+                                <div className='flex items-center space-x-3'>
+                                    <Rating value={4.6} precision={.5} readOnly />
+                                    <p className='opacity-60'>54890 Ratings</p>
+                                </div>
+
+                                <Box className="mt-5 space-y-3">
+                                    <Grid container alignItems="center" gap={2}>
+                                        <Grid item xs={2}>
+                                            <p>Excellent</p>
+                                        </Grid>
+                                        <Grid item xs={7}>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={40} color="success"></LinearProgress>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container alignItems="center" gap={2}>
+                                        <Grid item xs={2}>
+                                            <p>Very Good</p>
+                                        </Grid>
+                                        <Grid item xs={7}>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={30} color="success"></LinearProgress>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container alignItems="center" gap={2}>
+                                        <Grid item xs={2}>
+                                            <p>Good</p>
+                                        </Grid>
+                                        <Grid item xs={7}>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7, color: 'yellow' }} variant='determinate' value={25} ></LinearProgress>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container alignItems="center" gap={2}>
+                                        <Grid item xs={2}>
+                                            <p>Average</p>
+                                        </Grid>
+                                        <Grid item xs={7}>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={15} color="warning"></LinearProgress>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid container alignItems="center" gap={2}>
+                                        <Grid item xs={2}>
+                                            <p>Poor</p>
+                                        </Grid>
+                                        <Grid item xs={7}>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={10} color="error"></LinearProgress>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
                             </Grid>
 
-                            <Grid container alignItems="center" gap={2}>
-                                <Grid item xs={2}>
-                                    <p>Good</p>
-                                </Grid>
-                                <Grid item xs={7}>
-                                    <LinearProgress sx={{bgcolor:"#d0d0d0", borderRadius:4, height:7, color:'yellow'}} variant='determinate' value={25} ></LinearProgress>
-                                </Grid>
-                            </Grid>
+                        </Grid>
 
-                            <Grid container alignItems="center" gap={2}>
-                                <Grid item xs={2}>
-                                    <p>Average</p>
-                                </Grid>
-                                <Grid item xs={7}>
-                                    <LinearProgress sx={{bgcolor:"#d0d0d0", borderRadius:4, height:7}} variant='determinate' value={15} color="warning"></LinearProgress>
-                                </Grid>
-                            </Grid>
+                    </div>
+                </section>
 
-                            <Grid container alignItems="center" gap={2}>
-                                <Grid item xs={2}>
-                                    <p>Poor</p>
-                                </Grid>
-                                <Grid item xs={7}>
-                                    <LinearProgress sx={{bgcolor:"#d0d0d0", borderRadius:4, height:7}} variant='determinate' value={10} color="error"></LinearProgress>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                     </Grid>
 
-                   </Grid>
+                {/* Similar Products */}
+                <section className='pt-10'>
 
-                </div>
-            </section>
-
-            
-            {/* Similar Products */}
-            <section className='pt-10'>
-
-               <h1 className='py-5 text-xl font-bold'>Similar Products</h1>
-                <div className='flex flex-wrap space-y-5'>
-                   {mens_kurta.map((item)=> <HomeSectionCard product={item}/>)}
-                </div>
-            </section>
+                    <h1 className='py-5 text-xl font-bold'>Similar Products</h1>
+                    <div className='flex flex-wrap space-y-5'>
+                        {mens_kurta.map((item) => <HomeSectionCard product={item} />)}
+                    </div>
+                </section>
 
 
 
