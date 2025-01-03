@@ -1,23 +1,6 @@
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    theme: {
-      extend: {
-        gridTemplateRows: {
-          '[auto,auto,1fr]': 'auto auto 1fr',
-        },
-      },
-    },
-  }
-  ```
-*/
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import { Radio, RadioGroup } from '@headlessui/react'
 import Rating from '@mui/material/Rating';
@@ -26,9 +9,11 @@ import { Box, Grid, LinearProgress } from '@mui/material';
 import ProductReviewCart from './ProductReviewCart';
 import { mens_kurta } from '../../../Data/mens_kurta';
 import HomeSectionCard from '../HomeSectionCard/HomeSectionCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { findProductsById } from '../../../State/Product/Action';
 
-const product = {
+const staticProduct = {
     name: 'Basic Tee 6-Pack',
     price: '$192',
     href: '#',
@@ -83,12 +68,36 @@ function classNames(...classes) {
 }
 
 export default function ProductDetails() {
-    const [selectedColor, setSelectedColor] = useState(product.colors[0])
-    const [selectedSize, setSelectedSize] = useState(product.sizes[2])
+    const [selectedSize, setSelectedSize] = useState(staticProduct.sizes[2])
     const navigate = useNavigate();
+    const params = useParams();
+    const dispatch = useDispatch();
+    const productState = useSelector(state => state.product);
+    const { product, loading, error } = productState;
 
+    console.log("product------", product)
     const handleAddToCart = () => {
         navigate("/cart");
+    }
+
+    useEffect(() => {
+        if (params.productId && params.productId !== 'undefined') {
+            dispatch(findProductsById(params.productId));
+        } else {
+            console.error("Product ID is undefined");
+        }
+    }, [params.productId, dispatch])
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    if (!product || !product._id) {
+        return <div>Product not found</div>;
     }
 
     return (
@@ -96,7 +105,7 @@ export default function ProductDetails() {
             <div className="pt-6">
                 <nav aria-label="Breadcrumb">
                     <ol role="list" className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                        {product.breadcrumbs.map((breadcrumb) => (
+                        {staticProduct.breadcrumbs.map((breadcrumb) => (
                             <li key={breadcrumb.id}>
                                 <div className="flex items-center">
                                     <a href={breadcrumb.href} className="mr-2 text-sm font-medium text-gray-900">
@@ -116,8 +125,8 @@ export default function ProductDetails() {
                             </li>
                         ))}
                         <li className="text-sm">
-                            <a href={product.href} aria-current="page" className="font-medium text-gray-500 hover:text-gray-600">
-                                {product.name}
+                            <a href={staticProduct.href} aria-current="page" className="font-medium text-gray-500 hover:text-gray-600">
+                                {staticProduct.name}
                             </a>
                         </li>
                     </ol>
@@ -130,13 +139,13 @@ export default function ProductDetails() {
                     <div className="flex flex-col items-center">
                         <div className='overflow-hidden rounded-lg max-w-[30rem] max-h-[35rem]'>
                             <img
-                                alt={product.images[0].alt}
-                                src={product.images[0].src}
+                                alt={product?.imageUrl}
+                                src={product?.imageUrl}
                                 className="hidden aspect-[3/4] size-full rounded-lg object-cover lg:block"
                             />
                         </div>
                         <div className="flex flex-wrap space-x-5 justify-center">
-                            {product.images.map((item) => <div className='aspect-h2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] mt-4'>
+                            {product?.images && product.images.map((item) => <div className='aspect-h2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] mt-4'>
                                 <img
                                     alt={item.alt}
                                     src={item.src}
@@ -151,9 +160,9 @@ export default function ProductDetails() {
                     {/* Product info */}
                     <div className="lg:col-span-1 max-auto max-w-2xl px-4 pb-16 sm:px-6 lg:max-w-7xl lg:px-8 lg-pb-24">
                         <div className="lg:col-span-2 ">
-                            <h1 className="text-lg lg:text-xl font-semibold text-gray-900"> Universaloutfit</h1>
+                            <h1 className="text-lg lg:text-xl font-semibold text-gray-900">{product?.brand}</h1>
                             <h1 className='text-lg lg:text-xl text-gray-900 opacity-60 pt-1'>
-                                Casual Puff Sleeves Solid Women White Top
+                                {product?.title}
                             </h1>
                         </div>
 
@@ -162,17 +171,17 @@ export default function ProductDetails() {
                             <h2 className="sr-only">Product information</h2>
 
                             <div className='flex space-x-5 items-center text-lg lg:text-xl text-gray-900 mt-6'>
-                                <p>₹199</p>
-                                <p className='opacity-50 line-through'>₹211</p>
-                                <p className='text-green-600 font-semibold'>5 % Off</p>
+                                <p>₹{product?.discountedPrice}</p>
+                                <p className='opacity-50 line-through'>₹{product?.price}</p>
+                                <p className='text-green-600 font-semibold'>{product?.discountPercent}% Off</p>
                             </div>
 
                             {/* Reviews */}
                             <div className="mt-6">
                                 <div className='flex items-center space-x-3'>
-                                    <Rating name="read-only" value={5.5} readOnly />
-                                    <p className='opacity-50 text-sm'>56540 Ratings</p>
-                                    <p className='ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-600'>3870 Reviews</p>
+                                    <Rating name="read-only" value={product?.rating} readOnly />
+                                    <p className='opacity-50 text-sm'>{product?.ratingCount} Ratings</p>
+                                    <p className='ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-600'>{product?.reviewCount} Reviews</p>
                                 </div>
                             </div>
 
@@ -191,7 +200,7 @@ export default function ProductDetails() {
                                             onChange={setSelectedSize}
                                             className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4"
                                         >
-                                            {product.sizes.map((size) => (
+                                            {product?.sizes && product.sizes.map((size) => (
                                                 <Radio
                                                     key={size.name}
                                                     value={size}
@@ -242,7 +251,7 @@ export default function ProductDetails() {
                                 <h3 className="sr-only">Description</h3>
 
                                 <div className="space-y-6">
-                                    <p className="text-base text-gray-900">{product.description}</p>
+                                    <p className="text-base text-gray-900">{product?.description}</p>
                                 </div>
                             </div>
 
@@ -251,7 +260,7 @@ export default function ProductDetails() {
 
                                 <div className="mt-4">
                                     <ul role="list" className="list-disc space-y-2 pl-4 text-sm">
-                                        {product.highlights.map((highlight) => (
+                                        {product?.highlights && product.highlights.map((highlight) => (
                                             <li key={highlight} className="text-gray-400">
                                                 <span className="text-gray-600">{highlight}</span>
                                             </li>
@@ -264,7 +273,7 @@ export default function ProductDetails() {
                                 <h2 className="text-sm font-medium text-gray-900">Details</h2>
 
                                 <div className="mt-4 space-y-6">
-                                    <p className="text-sm text-gray-600">{product.details}</p>
+                                    <p className="text-sm text-gray-600">{product?.details}</p>
                                 </div>
                             </div>
                         </div>
@@ -279,7 +288,7 @@ export default function ProductDetails() {
                         <Grid container spacing={7}>
                             <Grid item xs={7}>
                                 <div className='space-y-5'>
-                                    {[1, 1, 1].map((item) => <ProductReviewCart />)}
+                                    {product?.reviews && product.reviews.map((review) => <ProductReviewCart key={review.id} review={review} />)}
                                 </div>
                             </Grid>
 
@@ -287,8 +296,8 @@ export default function ProductDetails() {
                                 <h1 className='text-xl font-semibold pb-2'>Product Ratings</h1>
 
                                 <div className='flex items-center space-x-3'>
-                                    <Rating value={4.6} precision={.5} readOnly />
-                                    <p className='opacity-60'>54890 Ratings</p>
+                                    <Rating value={product?.rating} precision={.5} readOnly />
+                                    <p className='opacity-60'>{product?.ratingCount} Ratings</p>
                                 </div>
 
                                 <Box className="mt-5 space-y-3">
@@ -297,7 +306,7 @@ export default function ProductDetails() {
                                             <p>Excellent</p>
                                         </Grid>
                                         <Grid item xs={7}>
-                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={40} color="success"></LinearProgress>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={product?.excellentRating} color="success"></LinearProgress>
                                         </Grid>
                                     </Grid>
 
@@ -306,7 +315,7 @@ export default function ProductDetails() {
                                             <p>Very Good</p>
                                         </Grid>
                                         <Grid item xs={7}>
-                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={30} color="success"></LinearProgress>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={product?.veryGoodRating} color="success"></LinearProgress>
                                         </Grid>
                                     </Grid>
 
@@ -315,7 +324,7 @@ export default function ProductDetails() {
                                             <p>Good</p>
                                         </Grid>
                                         <Grid item xs={7}>
-                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7, color: 'yellow' }} variant='determinate' value={25} ></LinearProgress>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7, color: 'yellow' }} variant='determinate' value={product?.goodRating} ></LinearProgress>
                                         </Grid>
                                     </Grid>
 
@@ -324,7 +333,7 @@ export default function ProductDetails() {
                                             <p>Average</p>
                                         </Grid>
                                         <Grid item xs={7}>
-                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={15} color="warning"></LinearProgress>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={product?.averageRating} color="warning"></LinearProgress>
                                         </Grid>
                                     </Grid>
 
@@ -333,7 +342,7 @@ export default function ProductDetails() {
                                             <p>Poor</p>
                                         </Grid>
                                         <Grid item xs={7}>
-                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={10} color="error"></LinearProgress>
+                                            <LinearProgress sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }} variant='determinate' value={product?.poorRating} color="error"></LinearProgress>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -350,7 +359,7 @@ export default function ProductDetails() {
 
                     <h1 className='py-5 text-xl font-bold'>Similar Products</h1>
                     <div className='flex flex-wrap space-y-5'>
-                        {mens_kurta.map((item) => <HomeSectionCard product={item} />)}
+                        {mens_kurta.map((item) => <HomeSectionCard key={item.id} product={item} />)}
                     </div>
                 </section>
 
