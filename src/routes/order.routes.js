@@ -13,8 +13,5 @@ router.get("/user", authenticate, orderController.orderHistory);
 // Route to find an order by its ID
 router.get("/:id", authenticate, orderController.findOrderById);
 
-// Route for customers to get their orders
-// router.get("/customer/:customerId", authenticate, orderController.);
-
 // Exporting the router
 module.exports = router;

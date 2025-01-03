@@ -10,13 +10,18 @@ const findUserCart = async(req, res) => {
     }
 }
 
+// Function to add an item to the cart
 const addItemToCart = async(req, res) => {
-    const user = req.user; // Get the user from the request
+    const userId = req.user._id; // Get the userId from the authenticated user
+    const { productId, quantity, size } = req.body; // Get productId, quantity, and size from the request body
+    const itemQuantity = quantity || 1; // Default quantity to 1 if not provided
     try {
-        const cartItem = await cartService.addCartItem(user.id, req.body); // Add item to the cart
-        return res.status(200).send(cartItem); // Send the cart item with status 200
+        console.log("Adding item to cart with data:", { userId, productId, itemQuantity, size }); // Add logging
+        const cart = await cartService.addItemToCart(userId, productId, itemQuantity, size);
+        return res.status(200).send(cart); // Change status to 200 for successful addition
     } catch (error) {
-        return res.status(500).send({error: error.message}); // Send error with status 500
+        console.error("Error adding item to cart:", error.message); // Add logging
+        return res.status(500).send({ error: error.message });
     }
 }
 

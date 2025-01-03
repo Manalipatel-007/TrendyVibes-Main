@@ -1,20 +1,28 @@
 const userService = require("../services/user.service.js"); // Import user service
 
-const getUserProfile = async(req, res) => {
-    const jwt = req.headers.authorization?.split(" ")[1]; // Get JWT token from authorization header
-    console.log("req ", jwt);
+const getUserProfile = async (req, res) => {
     try {
-        if(!jwt){
-            return res.status(404).send({error: "token not found"}); // Send error if token not found
+        if (!req.user) {
+            console.error("req.user is undefined"); // Log if req.user is undefined
+            return res.status(401).send({ message: 'Please authenticate' });
         }
-        const user = await userService.getUserProfileByToken(jwt); // Get user profile by token
-        console.log("user data", user);
 
-        return res.status(200).send(user); // Send user profile with status 200
+        const userId = req.user._id;
+        console.log("Fetching profile for user ID:", userId); // Log user ID
+
+        const user = await userService.getUserById(userId);
+        if (!user) {
+            console.log("User not found with ID:", userId); // Log user not found
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        console.log("User profile fetched successfully:", user); // Log user profile
+        res.status(200).send(user);
     } catch (error) {
-        return res.status(500).send({error: error.message}); // Send error with status 500
+        console.error("Error fetching user profile:", error.message); // Log the error
+        res.status(500).send({ message: 'Internal server error' });
     }
-}
+};
 
 const getAllUsers = async(req, res) => {
     try {

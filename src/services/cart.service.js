@@ -1,88 +1,98 @@
 const Cart = require("../models/cart.model");
 const CartItem = require("../models/cartItem.model");
-const Product = require("../models/product.model")
-
+const Product = require("../models/product.model");
 
 // Creates a new cart for the given user
 async function createCart(user) {
     try {
-        const cart = new Cart({ user }); // Initialize a new cart with the use
-        // Save the cart to the database
+        const cart = new Cart({ user });
         const createdCart = await cart.save();
         return createdCart;
-
     } catch (error) {
-        
         throw new Error(error.message);
     }
 }
-
 
 // Finds a user's cart and calculates totals
-async function findUserCart(userId){
+async function findUserCart(userId) {
     try {
-        // Retrieve the user's cart by user ID
-        let cart = await Cart.findOne({user:userId})
+        const cart = await Cart.findOne({ user: userId }).populate({
+            path: "cartItems",
+            populate: { path: "product" },
+        });
 
-         // Fetch cart items associated with the cart and populate product details
-        let cartItems = await CartItem.find({cart:cart._id}).populate('product');
-        cart.cartItems = cartItems;
-         // Initialize total values
+        if (!cart) throw new Error("Cart not found.");
+
         let totalPrice = 0;
-        let totalDiscountedPrice=0;
+        let totalDiscountedPrice = 0;
         let totalItem = 0;
 
-        // Calculate totals based on cart items
-        for(let cartItem of cart.cartItems){
-            totalPrice+= cartItem.price;
-            totalDiscountedPrice+=cartItem.discountedPrice;
-            totalItem+= cartItem.quantity;
+        for (let cartItem of cart.cartItems) {
+            totalPrice += cartItem.price;
+            totalDiscountedPrice += cartItem.discountedPrice;
+            totalItem += cartItem.quantity;
         }
 
-        // Add totals to the cart object
-        cart.totalPrice=totalPrice;
-        cart.totalItem=totalItem;
-        cart.discounte=totalPrice-totalDiscountedPrice;
+        cart.totalPrice = totalPrice;
+        cart.totalItem = totalItem;
+        cart.discount = totalPrice - totalDiscountedPrice;
 
         return cart;
-
     } catch (error) {
         throw new Error(error.message);
     }
 }
 
-
 // Adds an item to the user's cart
-async function addCartItem (userId, req){
-    try {
-        const cart= await Cart.findOne({user: userId});  // Find the user's cart by user ID
-        const product = await Product.findById(req.productId);  // Retrieve the product using its ID from the request
+async function addItemToCart(userId, productId, quantity, size) {
+    console.log("Adding item to cart:", { userId, productId, quantity, size }); // Add logging
 
-         // Check if the item already exists in the cart
-        const isPresent= await CartItem.findOne({cart:cart._id, product:product.id, userId})
-        if(!isPresent){
-             // Create a new cart item if it doesn't exist
-            const cartItem = new CartItem({
-                product:product._id,
-                cart:cart._id,
-                quantity:1,
-                userId,
-                price:product.price,
-                size:req.size,
-                discountedPrice:product.discountedPrice,
-            })
+    // Find the cart for the user
+    let cart = await Cart.findOne({ user: userId }).populate("cartItems");
 
-            const createdCartItem = await cartItem.save(); // Save the cart item to the database
-            // Add the new item to the cart and save the cart
-            cart.cartItems.push(createdCartItem); 
-            await cart.save();
-            
-            return "Item added to cart";
-        }
-
-       } catch (error) {
-        throw new Error(error.message);
+    // If the cart does not exist, create a new one
+    if (!cart) {
+        console.log("Cart not found for the user. Creating a new cart."); // Add logging
+        cart = new Cart({ user: userId, cartItems: [] }); // Initialize cartItems as an empty array
+        await cart.save();
     }
+
+    // Ensure cartItems is an array
+    if (!cart.cartItems) {
+        cart.cartItems = [];
+    }
+
+    // Find the product to add to the cart
+    const product = await Product.findById(productId);
+    if (!product) {
+        throw new Error("Product not found");
+    }
+
+    // Check if the product is already in the cart
+    const existingItem = cart.cartItems.find(item => item.product && item.product.equals(productId));
+    if (existingItem) {
+        // If the product is already in the cart, update the quantity
+        existingItem.quantity += quantity;
+        await existingItem.save();
+    } else {
+        // If the product is not in the cart, add it to the cart
+        const cartItem = new CartItem({
+            product: product._id,
+            cart: cart._id,
+            quantity: quantity || 1,
+            userId,
+            price: product.price,
+            size: size,
+            discountedPrice: product.discountedPrice || product.price,
+        });
+
+        const createdCartItem = await cartItem.save();
+        cart.cartItems.push(createdCartItem._id);
+    }
+
+    // Save the cart
+    await cart.save();
+    return cart;
 }
 
-module.exports = {createCart, findUserCart, addCartItem};
+module.exports = { createCart, findUserCart, addItemToCart };

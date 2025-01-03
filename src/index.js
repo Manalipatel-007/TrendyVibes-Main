@@ -7,7 +7,7 @@ app.use(cors()); // Middleware to enable CORS
 
 // Root route
 app.get("/", (req, res) => {
-    return res.status(200).send({message: "welcome to e-commerce api- node", status: true});
+    return res.status(200).send({ message: "welcome to e-commerce api- node", status: true });
 });
 
 // Import and use authentication routes

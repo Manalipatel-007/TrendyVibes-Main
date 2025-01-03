@@ -7,10 +7,11 @@ const orderSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:'users',
     },
-    orderItems:{
+    orderItems:[{
         type: mongoose.Schema.Types.ObjectId,
-        ref:'orderItems',
-    },
+        ref:'cartItems',
+        required: true,
+    }],
     orderDate:{
         type:Date,
         required:true,
@@ -54,7 +55,7 @@ const orderSchema = new Schema({
         required:true,
     },
     orderStatus:{
-        type: Number,
+        type: String,
         required:true,
         default:"PENDING",
     },

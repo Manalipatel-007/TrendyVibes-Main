@@ -1,17 +1,25 @@
 const jwt = require("jsonwebtoken");
+const secret = 'sdjhfsfjsdfshjcshjcbnbcsdbcdsbcjhcjdshcjdhfcdfcdcfdfcdfcdfcsd';
 
-const SECRET_KEY="ggfgfgddchgvjkhkgbhfgcgchfvjgvhvggvnbnbbvh";
-
-const generateToken=(userId)=>{
-    const token = jwt.sign({userId}, SECRET_KEY,{expiresIn:"48h"})
+const generateToken = (userId) => {
+    const token = jwt.sign({ userId }, secret, { expiresIn: '2h' });
+    console.log("Generated Token:", token); // Log the generated token
     return token;
-}
+};
 
+const verifyToken = (token) => {
+    console.log("Verifying Token:", token); // Log the token being verified
+    try {
+        const decoded = jwt.verify(token, secret);
+        console.log("Token verified successfully:", decoded); // Log successful verification
+        return decoded;
+    } catch (error) {
+        console.error("Token verification failed:", error); // Log the entire error object
+        return null;
+    }
+};
 
-
-const getUserIdFromToken =(token)=>{
-   const decodedToken = jwt.verify(token, SECRET_KEY)
-   return decodedToken.userId;
-}
-
-module.exports={generateToken, getUserIdFromToken}
+module.exports = {
+    generateToken,
+    verifyToken,
+};

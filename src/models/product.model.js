@@ -15,7 +15,7 @@ const productSchema = new mongoose.Schema({
     discountedPrice:{
         type: Number,
     },
-    discountPersent:{
+    discountPersent:{ // Corrected field name
         type: Number,
     },
     quantity:{

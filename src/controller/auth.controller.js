@@ -1,44 +1,77 @@
-const userService = require("../services/user.service.js"); // Import user service
+const User = require('../models/user.model'); // Assuming you have a User model
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const userService = require('../services/user.service'); // Ensure userService is imported
 const jwtProvider = require("../config/jwtProvider.js"); // Import JWT provider
-const bcrypt = require("bcrypt"); // Import bcrypt for password hashing
 const cartService = require("../services/cart.service.js"); // Import cart service
 
-const register = async(req, res) => {
+const register = async (req, res) => {
     try {
-        const user = await userService.createUser(req.body); // Create a new user
-        const jwt = jwtProvider.generateToken(user._id); // Generate a JWT token
+        const { firstName, lastName, email, password } = req.body; // Ensure firstName and lastName are included
 
-        await cartService.createCart(user); // Create a cart for the user
+        console.log("Registering user:", { firstName, lastName, email, password }); // Log user details
 
-        return res.status(200).send({jwt, message: "register successfully"}); // Send success message with JWT token
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            console.log("User already exists with email:", email); // Log existing user
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new user
+        const newUser = new User({
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword
+        });
+
+        // Save the user to the database
+        await newUser.save();
+
+        // Generate a JWT token
+        const token = jwtProvider.generateToken(newUser._id);
+       
+        console.log("User registered successfully:", newUser); // Log new user
+
+        res.status(201).json({ token, user: newUser });
     } catch (error) {
-        return res.status(500).send({error: error.message}); // Send error with status 500
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
-const login = async(req, res) => {
-    const {password, email} = req.body; // Get email and password from request body
+const login = async (req, res) => {
+    const { password, email } = req.body; // Get email and password from request body
 
     try {
         const user = await userService.getUserByEmail(email); // Get user by email
 
-        if(!user){
-            return res.status(404).send({message: 'user not found with email: ', email}); // Send error if user not found
+        if (!user) {
+            console.log(`User not found with email: ${email}`);
+            return res.status(404).send({ message: `User not found with email: ${email}` });
         }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password); // Compare passwords
-        if(!isPasswordValid){
-            return res.status(401).send({message: "Invalid Password..."}); // Send error if password is invalid
+        // Compare passwords
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            console.log("Invalid password");
+            return res.status(401).send({ message: "Invalid password" });
         }
+        // Generate a JWT token
+        const jwt = jwtProvider.generateToken(user._id);
+        console.log("JWT generated:", jwt);
 
-        const jwt = jwtProvider.generateToken(user._id); // Generate a JWT token
-        return res.status(200).send({jwt, message: "login success"}); // Send success message with JWT token
+        return res.status(200).send({ jwt, message: "Login successful" });
     } catch (error) {
-        return res.status(500).send({error: error.message}); // Send error with status 500
+        console.error("Login error:", error.message); // Log the error
+        return res.status(500).send({ error: error.message });
     }
-}
+};
 
 module.exports = {
-    register, // Export register function
-    login, // Export login function
-}
+    register,
+    login,
+};

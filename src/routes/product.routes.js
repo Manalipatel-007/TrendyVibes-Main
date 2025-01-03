@@ -1,14 +1,23 @@
 const express = require("express");
 const router = express.Router();
-
 const productController = require("../controller/product.controller");
-const authenticate = require("../middleware/authenticate.js");
 
 // Route to get all products
-router.get("/id", authenticate, productController.getAllProducts);
+router.get("/", productController.getAllProducts);
 
-// Route to find a product by its ID
-router.get("/id/:id", authenticate, productController.findProductById);
+// Route to get a product by ID
+router.get("/:id", productController.findProductById);
 
-// Exporting the router
+// Route to create a new product
+router.post("/", productController.createProduct);
+
+// Route to create multiple products
+router.post("/creates", productController.createMultipleProduct);
+
+// Route to delete a product
+router.delete("/:id", productController.deleteProduct);
+
+// Route to update a product
+router.put("/:id", productController.updateProduct);
+
 module.exports = router;

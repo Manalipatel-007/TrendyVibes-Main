@@ -47,17 +47,7 @@ const findUserById = async (userId) => {
 
 // Retrieves a user by their email
 const getUserByEmail = async (email) => {
-    try {
-         // Find the user with the given email
-        const user = await User.findOne({ email });
-         // If user is not found, throw an error
-        if (!user) {
-            throw new Error(`user not found with email : ${email}`);
-        }
-        return user;
-    } catch (error) {
-        throw new Error(error.message);
-    }
+    return await User.findOne({ email });
 }
 
 // Retrieves a user's profile using a token
@@ -89,12 +79,23 @@ const getAllUsers = async () => {
     }
 }
 
-
+const getUserById = async (userId) => {
+    try {
+        console.log("Fetching user with ID:", userId); // Log the user ID being fetched
+        const user = await User.findById(userId);
+        console.log("User found:", user); // Log the user found
+        return user;
+    } catch (error) {
+        console.error("Error retrieving user:", error.message); // Log the error
+        throw error;
+    }
+};
 
 module.exports = {
     createUser,
     findUserById,
     getUserByEmail,
     getUserProfileByToken,
-    getAllUsers
+    getAllUsers,
+    getUserById
 };

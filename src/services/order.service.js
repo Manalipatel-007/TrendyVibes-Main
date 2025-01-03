@@ -1,11 +1,14 @@
 const cartService = require("../services/cart.service.js");
 const Address = require("../models/address.model.js");
-const Order = require("../models/order.model.js")
+const Order = require("../models/order.model.js");
+const OrderItem = require("../models/orderItems.model.js");
+
 
 
 //  Function to create a new order
 async function createOrder(user, shippAddress) {
     let address;
+
 
     // Check if the shipping address already exists in the database
     if (shippAddress._id) {
@@ -13,12 +16,17 @@ async function createOrder(user, shippAddress) {
         address = existAddress; // Use existing address if found
     }
     else {
-        // If the address does not exist, create a new address and associate it with the user
+         // Create a new address if it does not exist
         address = new Address(shippAddress);
         address.user = user;
         await address.save();
 
-        user.addresses.push(address);
+        // Ensure user.addresses is an array before pushing
+        if (!Array.isArray(user.addresses)) {
+            user.addresses = [];
+        }
+
+        user.address.push(address);
         await user.save();  // Save the new address to the database
     }
 
@@ -28,7 +36,10 @@ async function createOrder(user, shippAddress) {
 
     // Create order items from cart items
     for (const item of cart.cartItems) {
-        const orderItem = new orderItems({
+        if (isNaN(item.price)) {
+            throw new Error(`Invalid price for item: ${item.product}`);
+        }
+        const orderItem = new OrderItem({
             price: item.price,
             product: item.product,
             quantity: item.quantity,
